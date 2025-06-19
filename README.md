@@ -1,1 +1,0 @@
-# downy-and-anthracnose
