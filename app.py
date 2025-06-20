@@ -1,29 +1,37 @@
+
+
 import streamlit as st
 from tensorflow.keras.models import load_model
+import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 import numpy as np
 from PIL import Image
 import io
 import os
 import requests
+from huggingface_hub import hf_hub_download
 
-# # Load your trained model (MobileNet + ResNet fusion)
-# MODEL_PATH = 'downy_anthracnose.keras'  # change to your actual model path
-# model = load_model(MODEL_PATH)
+# Load model from Hugging Face Hub
+def load_model_from_huggingface():
+    cache_dir = "/tmp/huggingface"
+    os.makedirs(cache_dir, exist_ok=True)
+    print("Downloading model from Hugging Face Hub...")
+    try:
+        model_path = hf_hub_download(
+            repo_id="anilkumar5590/downy-anthracnose-model",
+            filename="downy_anthracnose.keras",
+            cache_dir=cache_dir
+        )
+        print(f"Model downloaded successfully at: {model_path}")
+        model = tf.keras.models.load_model(model_path)
+        print("Model loaded successfully!")
+        return model
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        raise
 
-# Hugging Face URL of your model
-MODEL_URL = 'https://huggingface.co/anilkumar5590/downy-anthracnose-model/resolve/main/downy_anthracnose.keras'
-
-@st.cache_resource
-def load_model_from_url():
-    model_path = "temp_model.keras"
-    if not os.path.exists(model_path):
-        response = requests.get(MODEL_URL)
-        with open(model_path, 'wb') as f:
-            f.write(response.content)
-    return load_model(model_path)
-
-model = load_model_from_url()
+# Load model at startup
+model = load_model_from_huggingface()
 
 # Class names and descriptions
 CLASS_NAMES = ['Downy Mildew', 'Anthracnose']
